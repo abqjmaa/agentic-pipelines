@@ -2,6 +2,7 @@
 
 Format: `last_modified | path | title | summary`
 
+2026-10-13-10-22-30 | plans/past/2026-10-13-10-18-18_cerebras-reasoning-presets.md | Cerebras reasoning preset playbook | Optimize an existing secret-backed VS Code custom endpoint with named reasoning presets.
 2026-10-09-22-30-52 | plans/past/2026-10-09-22-40-00_conditional-flash-attention.md | Make Flash Attention conditional on compatibility | Clarify that unsupported Flash Attention alone does not block host optimization or establish unsupported Q8 caching.
 2026-10-09-21-23-54 | plans/past/2026-10-07-12-45-00_q8-mtp-cache.md | Require Q8 for target and MTP caches | User-approved clarification and live host validation of target and draft KV cache requirements.
 2026-10-09-21-23-54 | plans/past/2026-10-07-12-00-00_verify-inherited-alias-parameters.md | Verify inherited context alias parameters | Close the user-approved MTP parameter verification gap.

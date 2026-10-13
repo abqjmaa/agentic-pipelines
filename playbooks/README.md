@@ -11,3 +11,5 @@ Only routed playbooks are active product instructions. Unrouted procedures shoul
 `how_to_audit_existing_pipeline_conformance.md` owns preservation-safe review of an existing consumer after governance changes and produces findings plus a proposed host remediation plan without automatic mutation.
 
 `how_to_optimize_vscode_and_ollama.md` mandates q8_0 KV cache and 45-minute inference timeouts for VS Code/Ollama, with warm-prefix reuse verification.
+
+`how_to_optimize_vscode_and_cerebras.md` optimizes a user-created, secret-backed Custom Endpoint with explicit low/medium/high reasoning presets and a 128144-token total context cap.
