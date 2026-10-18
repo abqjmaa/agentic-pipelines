@@ -129,7 +129,7 @@ class DocumentationTests(unittest.TestCase):
         self.assertIn("Every operator entrypoint declared by a host pipeline", agents)
         self.assertIn("Exactly one host-selected ordinary, non-recovery entrypoint", agents)
         self.assertIn("host-owned platform-native prerequisite/bootstrap script", agents)
-        self.assertIn("direct commands remain available for CI, schedulers", agents)
+        self.assertIn("direct commands remain available for host-selected schedulers", agents)
         playbook = Path("playbooks/how_to_set_up_pipeline_entrypoints_in_vscode.md").read_text(encoding="utf-8")
         self.assertIn("Do not infer the host's entrypoints from the framework reference CLI", playbook)
         self.assertIn("Do not invent a package manager", playbook)
@@ -148,7 +148,7 @@ class DocumentationTests(unittest.TestCase):
 
     def test_readme_explains_pipeline_entry_points_after_introduction(self) -> None:
         text = Path("README.md").read_text(encoding="utf-8")
-        heading = "## Pipeline entry points"
+        heading = "## Reusable helper entrypoints"
         self.assertIn(heading, text)
         self.assertLess(text.index("Agentic Pipelines is"), text.index(heading))
         self.assertLess(text.index(heading), text.index("## How agents use the framework"))

@@ -25,7 +25,6 @@ class SourceHookTests(unittest.TestCase):
         (self.root / 'src').mkdir()
         config = yaml.safe_load((FRAMEWORK / 'api.sample.yaml').read_text(encoding='utf-8'))['code']
         config['roots'] = ['src']
-        config['build_pipelines'] = []
         (self.root / 'api.sample.yaml').write_text(yaml.safe_dump({'code': config}), encoding='utf-8')
         (self.root / 'src/README.md').write_text('- `module.py`: Fixture value.\n', encoding='utf-8')
         self.module = self.root / 'src/module.py'

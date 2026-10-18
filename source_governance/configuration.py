@@ -1,7 +1,7 @@
 """
 Load only public code governance from YAML and validate fail-closed invariants.
 Local inference values are neither interpreted nor returned in diagnostics.
-Public templates establish reproducible CI policy and local parity.
+Public templates establish reproducible source policy and local parity.
 """
 
 from pathlib import PurePosixPath
@@ -58,8 +58,6 @@ def load_configuration(snapshot):
             re.compile(pattern)
         except re.error:
             raise ValueError(f"invalid comment_pattern for {extension}") from None
-    if not isinstance(config.get("build_pipelines"), list):
-        raise ValueError("code.build_pipelines must list every build pipeline")
     if not snapshot.staged and (snapshot.root / "api.yaml").exists():
         local = mapping((snapshot.root / "api.yaml").read_text(encoding="utf-8-sig"))
         if local != config:

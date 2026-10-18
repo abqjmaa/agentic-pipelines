@@ -1,5 +1,5 @@
 """
-Verify repository source, documentation, build wiring and staged-snapshot gates.
+Verify repository source, documentation and staged-snapshot gates.
 Create isolated Git fixtures and invoke the installed checker/build wrapper.
 No network, production repositories or candidate source execution is involved.
 """
@@ -28,7 +28,7 @@ class SourceRepositoryTests(unittest.TestCase):
         source = yaml.safe_load((FRAMEWORK / 'api.sample.yaml').read_text(encoding='utf-8'))['code']
         self.config = {
             'max_lines': 400, 'roots': ['src'],
-            'languages': {'.py': source['languages']['.py']}, 'build_pipelines': [],
+            'languages': {'.py': source['languages']['.py']},
         }
         self.write_config()
         self.write('src/module.py', HEADER + 'value = 1\n')
@@ -138,30 +138,10 @@ class SourceRepositoryTests(unittest.TestCase):
         self.assertEqual(7, result.returncode)
         self.assertIn('executing command', result.stdout)
 
-    def workflow(self, gate):
-        path = '.github/workflows/build.yml'
-        self.config['build_pipelines'] = [{'path': path, 'kind': 'github-actions'}]
-        self.write_config()
-        steps = [{'uses': 'actions/checkout@v4'}, gate, {'run': 'python build.py'}]
-        self.write(path, yaml.safe_dump({'jobs': {'build': {'steps': steps}}}))
-
-    def test_build_gate_is_required_blocking_and_before_build(self):
-        good = {'name': 'Source governance', 'run': 'python scripts/check_source_governance.py --repo-root .'}
-        self.workflow(good)
-        self.assertEqual([], self.inspect()[1])
-        for weakening in ({'if': 'always()'}, {'continue-on-error': True}, {'run': good['run'] + ' || true'}):
-            self.workflow({**good, **weakening})
-            self.assertTrue(self.inspect()[1])
-        self.workflow({'run': 'python build.py'})
-        self.assertTrue(any('missing Source governance' in issue for issue in self.inspect()[1]))
-
-    def test_new_unregistered_workflow_fails(self):
-        self.write('.github/workflows/new.yml', 'jobs:\n  build:\n    steps:\n      - run: make\n')
-        self.assertTrue(any('not registered' in issue for issue in self.inspect()[1]))
-
-    def test_unregistered_conventional_build_and_extensionless_launcher_fail(self):
-        self.write('Makefile', 'all:\n\techo build\n')
+    def test_extensionless_source_launcher_fails(self):
         self.write('src/run', '#!/bin/sh\necho run\n')
-        findings = '\n'.join(self.inspect()[1])
-        self.assertIn('Makefile: build pipeline is not registered', findings)
-        self.assertIn('source launcher needs a configured language extension', findings)
+        self.assertTrue(any('source launcher needs a configured language extension' in issue for issue in self.inspect()[1]))
+
+    def test_source_validation_does_not_require_a_pipeline(self):
+        self.assertNotIn('build_pipelines', self.config)
+        self.assertEqual([], self.inspect()[1])

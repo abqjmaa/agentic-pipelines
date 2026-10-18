@@ -1,5 +1,5 @@
 """
-Combine source inventory, documentation, language and build wiring validation.
+Combine source inventory, documentation and language validation for a repository.
 Check all owned source recursively from a trusted worktree or staged snapshot.
 Return actionable diagnostics and counts; no candidate code is executed.
 """
@@ -7,7 +7,6 @@ Return actionable diagnostics and counts; no candidate code is executed.
 from pathlib import PurePosixPath
 import re
 
-from .builds import inspect_builds
 from .configuration import SOURCE_SUFFIXES, load_configuration
 from .python_source import inspect_python
 from .text_source import inspect_text
@@ -70,5 +69,4 @@ def check(snapshot):
         for filename in entries:
             if f"{directory}/{filename}" not in snapshot.files:
                 issues.append(f"{readme}: stale inventory entry {filename}")
-    issues.extend(inspect_builds(snapshot, config))
     return counts, issues

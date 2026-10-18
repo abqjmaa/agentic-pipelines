@@ -8,6 +8,8 @@ created_at: 2026-10-17-23-46-51
 
 # Enforce source and build governance
 
+**Superseded scope:** the user rejected all GitHub Actions integration and clarified that this submodule supplies instructions/helpers for host-owned pipelines. The hosted workflow and remote-check requirements below are historical, withdrawn requirements, not instructions to implement or restore. Correction: `2026-10-18-00-10-00_host-owned-build-governance`.
+
 Key: `[ ]` pending task, `[x]` completed task, `[?]` needs validation, `[-]` closed task
 
 Authority: the user's October 17 instruction approves implementation and upstream publication of the discussed rules, including a failing gate in every build pipeline. No further phase approval is required within this scope.
@@ -38,3 +40,5 @@ CI is checked in for every framework Actions build job. Remote required-branch p
 ## Publication receipt
 
 Implementation published upstream as `8ef7c5e7dfa66d13d3d050ddbc3a9f033fa1f1c2`; installed staged hook passed during the actual commit. Parent framework checkout/pointer advanced; the parent publication checkpoint records the final documentation commit. Actions started: source governance run 39105972173 and PDF matrix run 39105972170. Final remote results belong in the parent publication receipt. The connected GitHub integration returned 403 for branch-protection inspection; host gh is not configured. No credentials were changed and no claim of required branch protection is made. Repository owner must configure/verify required governance checks through an administrative connection.
+
+October 18 correction: the parent pointer publication described above had not been completed before the user rejected the hosted integration. The corrective host-owned governance checkpoint publishes the corrected pointer instead. No hosted CI or remote protection follow-up remains required by this plan.

@@ -1,0 +1,20 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "REPLACE PIPELINE: Build",
+      "type": "process",
+      "command": "bash",
+      "args": ["${workspaceFolder}/PATH_TO_SOFTWARE_BUILD.sh"],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
+          "${workspaceFolder}\\PATH_TO_SOFTWARE_BUILD.ps1"
+        ]
+      },
+      "presentation": {"reveal": "always", "panel": "dedicated", "focus": true},
+      "problemMatcher": []
+    }
+  ]
+}

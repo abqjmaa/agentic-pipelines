@@ -2,21 +2,25 @@
 
 Agentic Pipelines is a prompt-first framework for using scarce cloud intelligence to design durable local-inference processes, then using abundant local compute to execute, review, repair, and analyze work at scale.
 
+This submodule is not a pipeline. It supplies instructions, templates and reusable helpers for host-owned pipelines, including applications and data analysis. The host selects its environment and exposes its actions through VS Code tasks, with its canonical pipeline also in `launch.json`.
+
 Its primary reusable assets are concise prompts and task-specific playbooks. The Python runtime, Ollama-compatible API adapter, SQLite state, validators, thread capture, and reports are shared supporting infrastructure.
 
 Agentic Pipelines are mostly ordinary deterministic automation. Code governs exactness; models govern meaning; humans govern unresolved intent and risk; examples specify behavior. **LLMs are few-shot learners.** When trusted history exists, semantic stages should normally see bounded representative past inputs and accepted outputs followed by the new input, rather than an expanding handcrafted approximation of the demonstrated behavior. Every model step owns one coherent bounded decision with minimum sufficient context, precise output, scope-bound review, finite attempts, and captured evidence.
 
-## Pipeline entry points
+## Reusable helper entrypoints
 
-Source/build governance is mandatory for this framework and adopting hosts. Run
+Source governance applies to maintained source. Run
 `python scripts/check_source_governance.py --repo-root .` inside the framework
 (prefix `scripts/` with `agentic-pipelines/` in a host). Use `--staged` before
 commits. Install the preserved-hook integration with
-`python scripts/install_source_governance_hook.py --repo-root .`. Every build
-pipeline must run the check and fail when it fails; the reusable entrypoint is
+`python scripts/install_source_governance_hook.py --repo-root .`. When a host pipeline includes software building, its build must run the check
+and fail when it fails; the reusable helper is
 `python scripts/governed_build.py --repo-root . -- COMMAND ARG...`.
 See `references/source_build_governance.md` for source roots, comment-aware
-400-line accounting, headers, directory inventories and mandatory build wiring.
+400-line accounting, headers, directory inventories and host software-build wiring.
+Use `templates/vscode/software-build.*` as adaptable task/launch/native-wrapper
+examples when needed. No GitHub Actions integration is provided or required.
 
 All commands run from the host repository root, where the framework is normally mounted at `./agentic-pipelines`. Start with the command matching the smallest action you need:
 
@@ -29,7 +33,7 @@ All commands run from the host repository root, where the framework is normally 
 - `python agentic-pipelines/scripts/pipeline.py report ...` and `analyze ...`: produce deterministic run reporting or bounded advisory analysis; `analyze` requires local API configuration when it invokes its declared analysis prompt.
 - `python agentic-pipelines/scripts/pipeline.py retry-cohort ...` and `rollback-entity ...`: perform the explicit recovery actions described in the operation/retry playbooks.
 
-These commands describe the framework reference runtime; an importing project may expose different interactive operations. Every host-declared operator entrypoint must have a host-owned VS Code task, and exactly one ordinary main entrypoint must be the primary Run/Debug play action. Both invoke the host's appropriate platform-native prerequisite/bootstrap script before its actual pipeline command. See `playbooks/how_to_set_up_pipeline_entrypoints_in_vscode.md`; the files under `templates/vscode/` are adaptable examples, not installable defaults. Direct commands remain available for CI, schedulers, and other automation.
+These commands describe the framework reference runtime; an importing project may expose different interactive operations. Every host-declared operator entrypoint must have a host-owned VS Code task, and exactly one ordinary main entrypoint must be the primary Run/Debug play action. Both invoke the host's appropriate platform-native prerequisite/bootstrap script before its actual pipeline command. See `playbooks/how_to_set_up_pipeline_entrypoints_in_vscode.md`; the files under `templates/vscode/` are adaptable examples, not installable defaults. Direct commands remain available for host-selected schedulers and other automation.
 
 Every importing project owns `scripts/bootstrap.py` as its stable setup and health-check command. It delegates to a host-selected versioned implementation such as `scripts/bootstrap-v1.py`. Run `python scripts/bootstrap.py --check` for read-only per-requirement results and final pass/fail totals. Run it without `--check` to inspect and repair declared requirements idempotently before pipeline work. See `playbooks/how_to_create_and_maintain_host_bootstrap.md`; `templates/bootstrap/` provides non-installable examples.
 

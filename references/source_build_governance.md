@@ -1,7 +1,12 @@
 # Source and build governance
 
-This is the canonical source-code and build-pipeline policy. It applies to all
-first-party implementation, tooling, examples, and tests, including this framework.
+This is the canonical source-code and software-build policy. Agentic Pipelines
+supplies reusable instructions, templates and helpers; the submodule itself is not
+a pipeline. Hosts own their environment, pipeline type and executable commands.
+Source rules apply to first-party implementation, tooling, examples and tests,
+including reusable framework code. Software-build integration applies when the
+host actually includes a software-build stage, not merely because it imports this
+submodule. A data-analysis pipeline need not invent a software build.
 Updating a submodule pointer does not by itself migrate a host's source or builds.
 
 ## Source organization
@@ -54,7 +59,7 @@ fail explicitly, never silently certify source they cannot parse.
 ## Configuration and canonical check
 
 Track the public `code` mapping in `api.sample.yaml`; copy the same mapping into
-ignored local `api.yaml`. The checker uses the tracked mapping in CI and compares
+ignored local `api.yaml`. The checker uses the tracked mapping for reproducible local checks and compares
 an existing local mapping against it. A missing or different local mapping fails;
 it must not weaken policy. It never reads or prints endpoint credentials and
 needs no model service. Configure `comment_pattern` for each extension/adapter.
@@ -67,36 +72,51 @@ reports every failure and exits nonzero. Use `--staged` for the Git index. Stage
 checks read staged data using the trusted installed checker; they never execute
 staged scripts or materialize staged symlinks. Fix violations; do not add a bypass.
 
-## Mandatory commit and build gates
+## Mandatory commit and software-build gates
 
-**Every build pipeline must include this check and fail the build when it fails.**
-This includes local build scripts, CI, release/package/container jobs, alternate
-platforms, and scheduled/manual builds. Run the gate before compilation, bundling,
-rendering, packaging, or publication. Do not ignore its exit status, use
-`continue-on-error`, wrap it in an advisory condition, or run it concurrently with
-the build it protects. Recheck after source generation and before compiling that
-generated source. Dependency installation needed to run the checker may precede it.
+Run the source check before commits. Install the reusable pre-commit integration
+with `python agentic-pipelines/scripts/install_source_governance_hook.py --repo-root .`.
+It checks staged content and preserves existing hooks; host bootstrap owns its
+installation/check. Local hooks are bypassable, so agents must also obey the policy.
 
-Use `scripts/governed_build.py --repo-root . -- COMMAND ARG...` as the reusable
-fail-closed wrapper for arbitrary build commands. Existing build scripts must call
-the checker or this wrapper and propagate failure. Register each pipeline in
-`code.build_pipelines`; GitHub Actions paths are also discovered so an omitted
-workflow cannot escape inspection. Each executable Actions job must contain the
-canonical named gate step before build/test commands. The checker validates the
-supported Actions wiring, not arbitrary shell semantics. Other build systems need
-an integration regression proving a failing source gate prevents their command.
+**Every software-build pipeline created or maintained using this framework must
+include the source check and fail to build if it fails.** This covers each actual
+software compile, bundle, package, release or container build in the host's chosen
+environment. A data transformation, analysis or document render is not automatically
+a software build. Do not invent a build stage for a pipeline that has none.
 
-Install the framework pre-commit integration with
-`python agentic-pipelines/scripts/install_source_governance_hook.py --repo-root .`.
-It checks the staged snapshot and chains existing hooks without overwriting them.
-Host bootstrap must install/check this integration. CI must run the committed-tree
-check and tests on every PR/push, with the governance job selected as a required
-branch check. Local hooks and direct compiler calls are bypassable; required remote
-checks and governed entrypoints provide enforcement, not a claim to intercept all
-possible Git/compiler invocations. Changing remote protection requires repository
-administration authority and must be reported separately from checked-in wiring.
+Within a software-build pipeline, bootstrap declared prerequisites, check source,
+then invoke the host's build command only on success. Recheck generated first-party
+source before compiling it. Preserve nonzero statuses and controlled interruption;
+never make the source gate advisory or run it in parallel with the protected build.
+Use `python agentic-pipelines/scripts/governed_build.py --repo-root . -- COMMAND ARG...`
+or an equivalent host-owned call to the canonical checker that propagates failure.
+The reusable wrapper supplies the gate; the host selects all tools and arguments.
 
-Adoption includes source decomposition, documentation, configuration, hook setup,
-every build integration, regression tests, and a passing gate. Prepare that complete
-tree before enabling enforcement. Record exact remaining host work; do not claim
-compliance merely from documentation or a newer framework pointer.
+## Host VS Code integration
+
+Each host-declared pipeline action must appear in host `.vscode/tasks.json`.
+The canonical ordinary pipeline must also be exposed in `.vscode/launch.json`.
+Both enter the same host-owned native prerequisite/bootstrap path and execute the
+operation once. When that operation includes a software build, both paths must
+reach the failing source gate before that build. A separate source-check task is
+useful but is not sufficient: the build itself must depend on a passing check.
+For a mixed pipeline, gate its software-build stage without inventing software
+build requirements for unrelated analysis stages.
+
+Use `playbooks/how_to_set_up_pipeline_entrypoints_in_vscode.md` and adapt
+`templates/vscode/software-build.*` only when the host needs software building.
+These are examples, not a pipeline installed in the framework or a replacement
+for existing host files. Preserve the host's selected canonical operation and
+merge its VS Code configuration; do not overwrite other tasks or launch entries.
+
+No GitHub Actions integration, hosted workflow, required remote check or branch
+protection is supplied or required by this policy. Do not create them as a side
+effect of building a host pipeline. The source checker validates source, not an
+invented workflow registry or the semantics of arbitrary build scripts.
+
+Adoption includes applicable source decomposition, documentation, configuration,
+hook setup and the host's actual software-build entrypoints. Verify with a local
+regression that invalid source prevents build execution through the shared path,
+and that valid source permits it while preserving the build's status. Record exact
+remaining host work; a pointer refresh alone does not establish compliance.

@@ -22,7 +22,6 @@ Produce the host-owned entrypoint, current versioned implementation, requirement
 
 ## Mandatory source and build governance
 
-Apply `references/source_build_governance.md` using
-`playbooks/how_to_govern_source_and_builds.md`: declare code roots/comment patterns,
-install/check preserved staged hooks through bootstrap, and include a blocking
-source check in every build pipeline. Pointer refresh alone is not host compliance.
+Follow `playbooks/how_to_govern_source_and_builds.md`: source rules govern maintained
+code; failing build gates apply to actual host software builds. Map host actions to
+VS Code tasks and the canonical pipeline to launch.json. Do not create hosted workflows.

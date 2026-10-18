@@ -5,8 +5,7 @@ This directory owns source governance assets.
 ## Source inventory
 
 - `__init__.py`: Expose deterministic source governance independently of model execution.
-- `builds.py`: Audit registered build gates and discover GitHub Actions jobs independently.
-- `checker.py`: Combine source inventory, documentation, language and build wiring validation.
+- `checker.py`: Combine source inventory, documentation and language validation for a repository.
 - `configuration.py`: Load only public code governance from YAML and validate fail-closed invariants.
 - `python_source.py`: Validate Python statement layout and count physical code with tokenize and AST.
 - `snapshot.py`: Read repository or staged-index data without executing candidate source.

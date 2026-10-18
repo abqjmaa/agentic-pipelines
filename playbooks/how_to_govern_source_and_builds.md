@@ -1,36 +1,37 @@
-# Govern source and builds
+# Govern source and software builds
 
 ## Use when
 
-Organizing source or enforcing commit/build gates.
+Organizing source or adding governance to a host's software-build pipeline.
 
 ## Load
 
-Read `references/source_build_governance.md` and the approved implementation plan.
+`references/source_build_governance.md`, the approved plan, host pipeline contract,
+and `playbooks/how_to_set_up_pipeline_entrypoints_in_vscode.md` when adding entrypoints.
 
 ## Procedure
 
-1. Inventory owned source and every build entrypoint; preserve existing work.
-2. Declare root directories, language adapters and comment patterns under `code`
-   in tracked `api.sample.yaml` and local ignored `api.yaml`. Never overwrite local
-   inference credentials. Unsupported adapters need implementation and fixtures.
-3. Decompose oversized files by responsibility. Add accurate multiline file
-   headers and a README inventory in every source directory. Expand combined
-   statements; preserve behavior through focused regression tests.
-4. Add the canonical failing source check to **every build pipeline** before its
-   build commands. Register build pipelines in the public code configuration.
-   For Actions use a step named `Source governance` with
-   `run: python scripts/check_source_governance.py --repo-root .` (prefix the
-   script with the framework submodule path in a host). No conditional/advisory
-   gate or ignored status. For other systems use the governed-build wrapper and
-   prove a deliberately invalid source tree prevents command execution.
-5. Install the staged pre-commit gate through the host's selected bootstrap,
-   preserving existing hooks. Check committed content independently in CI.
-   Configure required remote checks where authorized; report missing protection.
-6. Run source checks, staged-snapshot checks, failure-injection fixtures and
-   relevant behavior regressions. Never loosen the cap or hide source to pass.
-7. Reconcile plan/status and journal. Publish the framework, then update host pins.
-   Host source/build migration is separate work and requires its own evidence.
+1. Identify the host's actual pipeline type, environment and source. The framework
+   submodule supplies instructions/helpers; it is not itself the host pipeline.
+2. Declare source roots, language adapters and comment patterns under `code` in
+   tracked `api.sample.yaml` and local ignored `api.yaml`. Preserve credentials.
+3. Decompose oversized files by responsibility, document files/directories, and
+   expand combined statements. Verify behavior with appropriate regressions.
+4. Install/check the staged pre-commit integration through host bootstrap,
+   preserving existing hooks. Run the source check before commits.
+5. If the host includes software building, make every actual software-build path
+   run the canonical source check and stop on failure. Use `governed_build.py` or
+   propagate the canonical check's nonzero status from the host's build script.
+   Do not invent software building for analysis or other pipelines without it.
+6. Expose host actions as visible VS Code tasks. Add the canonical pipeline to
+   `launch.json`; both surfaces use the same native bootstrap/operation path.
+   Software builds must reach the failing gate through both surfaces, once.
+   Adapt the software-build examples only where applicable; preserve host files.
+7. Verify locally that failed source checks prevent command execution and passing
+   checks preserve build results. Verify task/launch mappings and bootstrap order.
+8. Reconcile plan/status and journal, then publish. Record host adoption separately
+   from framework pointer updates. Do not add GitHub Actions integration or remote
+   administration requirements.
 
-The user's implementation authorization covers routine fixes and verification;
+Existing implementation authorization covers routine corrections and verification;
 do not introduce per-file or per-phase permission stops within that scope.

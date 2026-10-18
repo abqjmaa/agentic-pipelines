@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Run the canonical source/build check against a repository or its Git index.
+Run the canonical source check against a repository or its Git index.
 Delegate to trusted framework validators, print diagnostics and propagate failure.
 No model configuration, credentials or inspected source execution is required.
 """
@@ -17,7 +17,7 @@ from source_governance.snapshot import Snapshot
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Check mandatory source and build governance")
+    parser = argparse.ArgumentParser(description="Check mandatory source governance")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--staged", action="store_true")
     args = parser.parse_args()

@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "REPLACE PIPELINE: Build",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "bash \"${workspaceFolder}/PATH_TO_SOFTWARE_BUILD.sh\"",
+      "windows": {
+        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${workspaceFolder}\\PATH_TO_SOFTWARE_BUILD.ps1\""
+      },
+      "cwd": "${workspaceFolder}",
+      "presentation": {"group": "pipeline", "order": 1}
+    }
+  ]
+}

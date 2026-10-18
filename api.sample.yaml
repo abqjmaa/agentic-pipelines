@@ -39,7 +39,7 @@ redaction:
   sensitive_values: []
 
 # Public source/build policy; copy this mapping unchanged into local api.yaml.
-# CI uses this tracked sample and never requires inference credentials.
+# Local checks use this tracked sample and never require inference credentials.
 code:
   max_lines: 400
   roots:
@@ -58,8 +58,3 @@ code:
     .ps1:
       adapter: powershell
       comment_pattern: '(?:#[^\n]*|(?s:<#.*#>))'
-  build_pipelines:
-    - path: .github/workflows/markdown-pdf.yml
-      kind: github-actions
-    - path: .github/workflows/source-governance.yml
-      kind: github-actions
