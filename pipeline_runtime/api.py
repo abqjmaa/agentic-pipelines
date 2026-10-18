@@ -1,4 +1,8 @@
-"""The sole Ollama-compatible inference boundary for pipeline stages."""
+"""
+The sole Ollama-compatible inference boundary for pipeline stages.
+Builds bounded local HTTP requests, retries transport failures and validates response contracts.
+Redacts configured secrets, records thread evidence and opens provider failure circuits.
+"""
 
 from __future__ import annotations
 

@@ -1,4 +1,8 @@
-"""Run with the renderer virtual environment; no system fonts or browser required."""
+"""
+Run with the renderer virtual environment; no system fonts or browser required.
+Exercises public behavior with isolated fixtures and unittest assertions.
+Uses temporary resources or mocks where needed; no production state is changed.
+"""
 
 import importlib.util
 from pathlib import Path

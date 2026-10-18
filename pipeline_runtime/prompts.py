@@ -1,4 +1,8 @@
-"""Versioned prompt loading, minimal-context rendering, and output validation."""
+"""
+Versioned prompt loading, minimal-context rendering, and output validation.
+Loads Markdown prompt contracts, verifies metadata and substitutes declared inputs.
+Validates structured outputs against declared JSON schemas and reports prompt errors.
+"""
 
 from __future__ import annotations
 

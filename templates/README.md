@@ -15,3 +15,7 @@
 - `submodule_update_synthesis_report.md`: host-preserving update review.
 
 Load only the template named by the active playbook.
+
+## Source inventory
+
+No source files are directly contained here; subdirectories document their own files.

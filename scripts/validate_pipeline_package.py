@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Validate a staged package without configuring inference or starting work."""
+"""
+Validate a staged package without configuring inference or starting work.
+Validates one staged pipeline package and prints contract diagnostics with exit status.
+Uses the package validator without inference, promotion or source mutation.
+"""
 
 from __future__ import annotations
 

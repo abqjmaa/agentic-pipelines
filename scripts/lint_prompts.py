@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Validate prompt identity, metadata, contracts, and narrow authority."""
+"""
+Validate prompt identity, metadata, contracts, and narrow authority.
+Checks the prompt manifest, prompt metadata, declared inputs and output-schema references.
+Returns exact catalog diagnostics and a failing CLI status without model calls.
+"""
 
 from __future__ import annotations
 

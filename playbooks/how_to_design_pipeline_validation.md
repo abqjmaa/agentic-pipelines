@@ -18,3 +18,10 @@ Entity/goal contract, semantic-unit and example strategy, protected invariants, 
 
 ## Output and verification
 An authority matrix plus runtime and offline-evaluation plan. Every gate names property, authority, proof, materiality, evidence, repair owner, and escalation. Reject semantic proxies as verdicts, decorative blocking fields, unmeasured stage proliferation, or weakened criteria.
+
+## Mandatory source and build governance
+
+Apply `references/source_build_governance.md` using
+`playbooks/how_to_govern_source_and_builds.md`: declare code roots/comment patterns,
+install/check preserved staged hooks through bootstrap, and include a blocking
+source check in every build pipeline. Pointer refresh alone is not host compliance.

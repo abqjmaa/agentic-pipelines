@@ -1,3 +1,9 @@
+"""
+Regression tests for ArchitectureTests.
+Exercises public behavior with isolated fixtures and unittest assertions.
+Uses temporary resources or mocks where needed; no production state is changed.
+"""
+
 from pathlib import Path
 import unittest
 

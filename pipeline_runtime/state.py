@@ -1,5 +1,7 @@
-"""Transactional SQLite state, locks, attempts, evidence, and cohorts."""
-
+"""Transactional SQLite locks, attempts, evidence and recovery queries.
+StateStore owns database connections and composes versioned schema migration.
+Public state transitions and reporting contracts remain stable.
+"""
 from __future__ import annotations
 
 import json
@@ -9,22 +11,11 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = 5
+from .state_common import SCHEMA_VERSION, StateError, _now, _stamp
+from .state_schema import StateSchemaMixin
 
 
-class StateError(RuntimeError):
-    """State is incompatible, locked, or cannot make the requested transition."""
-
-
-def _now() -> datetime:
-    return datetime.now(UTC)
-
-
-def _stamp(value: datetime | None = None) -> str:
-    return (value or _now()).isoformat()
-
-
-class StateStore:
+class StateStore(StateSchemaMixin):
     def __init__(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         self.connection = sqlite3.connect(path, timeout=30)
@@ -33,138 +24,10 @@ class StateStore:
         self.connection.execute("PRAGMA journal_mode=WAL")
         self._migrate()
 
-    def _columns(self, table: str) -> set[str]:
-        return {row["name"] for row in self.connection.execute(f"PRAGMA table_info({table})")}
-
-    def _add_column(self, table: str, declaration: str) -> None:
-        name = declaration.split()[0]
-        if name not in self._columns(table):
-            self.connection.execute(f"ALTER TABLE {table} ADD COLUMN {declaration}")
-
-    def _migrate(self) -> None:
-        version = int(self.connection.execute("PRAGMA user_version").fetchone()[0])
-        if version > SCHEMA_VERSION:
-            raise StateError(f"state schema {version} is newer than runtime schema {SCHEMA_VERSION}")
-        with self.connection:
-            self.connection.executescript(
-                """
-                CREATE TABLE IF NOT EXISTS schema_migrations (
-                    version INTEGER PRIMARY KEY,
-                    applied_at TEXT NOT NULL
-                );
-                CREATE TABLE IF NOT EXISTS entities (
-                    id TEXT PRIMARY KEY,
-                    source_path TEXT NOT NULL,
-                    source_hash TEXT NOT NULL,
-                    state TEXT NOT NULL,
-                    candidate_path TEXT,
-                    accepted_path TEXT,
-                    error_code TEXT,
-                    error_detail TEXT,
-                    thread_path TEXT,
-                    prompt_hash TEXT,
-                    run_id TEXT,
-                    lease_owner TEXT,
-                    lease_expires TEXT,
-                    updated_at TEXT NOT NULL
-                );
-                CREATE TABLE IF NOT EXISTS transitions (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    entity_id TEXT NOT NULL REFERENCES entities(id),
-                    from_state TEXT,
-                    to_state TEXT NOT NULL,
-                    reason TEXT NOT NULL,
-                    evidence_path TEXT,
-                    created_at TEXT NOT NULL
-                );
-                CREATE TABLE IF NOT EXISTS runs (
-                    id TEXT PRIMARY KEY,
-                    started_at TEXT NOT NULL,
-                    finished_at TEXT,
-                    status TEXT NOT NULL,
-                    processed INTEGER NOT NULL DEFAULT 0,
-                    accepted INTEGER NOT NULL DEFAULT 0,
-                    quarantined INTEGER NOT NULL DEFAULT 0
-                );
-                CREATE TABLE IF NOT EXISTS attempts (
-                    id TEXT PRIMARY KEY,
-                    run_id TEXT NOT NULL,
-                    entity_id TEXT NOT NULL REFERENCES entities(id),
-                    stage TEXT NOT NULL,
-                    prompt_id TEXT NOT NULL,
-                    prompt_version TEXT NOT NULL,
-                    prompt_hash TEXT NOT NULL,
-                    status TEXT NOT NULL,
-                    thread_path TEXT,
-                    artifact_path TEXT,
-                    error_code TEXT,
-                    error_detail TEXT,
-                    started_at TEXT NOT NULL,
-                    finished_at TEXT
-                );
-                CREATE TABLE IF NOT EXISTS validator_results (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    run_id TEXT NOT NULL,
-                    entity_id TEXT NOT NULL REFERENCES entities(id),
-                    attempt_id TEXT NOT NULL,
-                    passed INTEGER NOT NULL,
-                    evidence_json TEXT NOT NULL,
-                    evidence_path TEXT,
-                    created_at TEXT NOT NULL
-                );
-                CREATE TABLE IF NOT EXISTS runner_lock (
-                    singleton INTEGER PRIMARY KEY CHECK(singleton = 1),
-                    owner TEXT NOT NULL,
-                    run_id TEXT NOT NULL,
-                    acquired_at TEXT NOT NULL,
-                    expires_at TEXT NOT NULL
-                );
-                CREATE TABLE IF NOT EXISTS promotion_records (
-                    id TEXT PRIMARY KEY,
-                    entity_id TEXT NOT NULL REFERENCES entities(id),
-                    original_hash TEXT NOT NULL,
-                    candidate_hash TEXT NOT NULL,
-                    backup_path TEXT NOT NULL,
-                    status TEXT NOT NULL,
-                    created_at TEXT NOT NULL,
-                    finished_at TEXT
-                );
-                """
-            )
-            for declaration in (
-                "accepted_path TEXT", "prompt_hash TEXT", "run_id TEXT", "lease_owner TEXT", "lease_expires TEXT"
-            ):
-                self._add_column("entities", declaration)
-            for declaration in (
-                "request_bytes INTEGER",
-                "response_bytes INTEGER",
-                "context_limit INTEGER",
-                "completion_limit INTEGER",
-                "reasoning_mode TEXT",
-                "failure_class TEXT",
-                "authority TEXT",
-                "validator_name TEXT",
-                "retry_disposition TEXT",
-                "provider TEXT",
-                "model TEXT",
-                "generation_config_json TEXT",
-                "transport_attempts INTEGER",
-                "transport_retry_json TEXT",
-                "prompt_tokens INTEGER",
-                "completion_tokens INTEGER",
-                "prompt_template_bytes INTEGER",
-                "session_id TEXT",
-                "session_step INTEGER",
-            ):
-                self._add_column("attempts", declaration)
-            if "created_at" not in self._columns("transitions"):
-                self._add_column("transitions", "created_at TEXT")
-                self.connection.execute("UPDATE transitions SET created_at=? WHERE created_at IS NULL", (_stamp(),))
-            self.connection.execute("INSERT OR IGNORE INTO schema_migrations(version, applied_at) VALUES(?, ?)", (SCHEMA_VERSION, _stamp()))
-            self.connection.execute(f"PRAGMA user_version={SCHEMA_VERSION}")
 
     def close(self) -> None:
         self.connection.close()
+
 
     def acquire_lock(self, owner: str, run_id: str, stale_seconds: int) -> None:
         now = _now()
@@ -176,13 +39,16 @@ class StateStore:
             self.connection.execute("DELETE FROM runner_lock WHERE singleton=1")
             self.connection.execute("INSERT INTO runner_lock(singleton,owner,run_id,acquired_at,expires_at) VALUES(1,?,?,?,?)", (owner, run_id, _stamp(now), expires))
 
+
     def release_lock(self, owner: str, run_id: str) -> None:
         with self.connection:
             self.connection.execute("DELETE FROM runner_lock WHERE singleton=1 AND owner=? AND run_id=?", (owner, run_id))
 
+
     def start_run(self, run_id: str) -> None:
         with self.connection:
             self.connection.execute("INSERT INTO runs(id,started_at,status) VALUES(?,?,'running')", (run_id, _stamp()))
+
 
     def reconcile_running_runs(self) -> list[str]:
         """Close runs left running after a process died once a new runner owns the lock."""
@@ -201,6 +67,7 @@ class StateStore:
                 )
         return run_ids
 
+
     def finish_run(self, run_id: str, status: str) -> None:
         summary = {row["state"]: row["count"] for row in self.connection.execute("SELECT state,COUNT(*) count FROM entities WHERE run_id=? GROUP BY state", (run_id,))}
         with self.connection:
@@ -208,6 +75,7 @@ class StateStore:
                 "UPDATE runs SET finished_at=?,status=?,processed=?,accepted=?,quarantined=? WHERE id=?",
                 (_stamp(), status, sum(summary.values()), summary.get("accepted", 0) + summary.get("promoted", 0), summary.get("quarantined", 0), run_id),
             )
+
 
     def upsert_discovered(self, entity_id: str, source_path: str, source_hash: str, contract_hash: str) -> bool:
         old = self.connection.execute("SELECT source_hash,state,prompt_hash FROM entities WHERE id=?", (entity_id,)).fetchone()
@@ -229,12 +97,14 @@ class StateStore:
             self._transition(entity_id, old_state, "discovered", reason)
         return True
 
+
     def _transition(self, entity_id: str, old: str | None, new: str, reason: str, evidence: str | None = None) -> None:
         self.connection.execute("UPDATE entities SET state=?,updated_at=? WHERE id=?", (new, _stamp(), entity_id))
         self.connection.execute(
             "INSERT INTO transitions(entity_id,from_state,to_state,reason,evidence_path,created_at) VALUES(?,?,?,?,?,?)",
             (entity_id, old, new, reason, evidence, _stamp()),
         )
+
 
     def transition(self, entity_id: str, new: str, reason: str, evidence: str | None = None) -> None:
         current = self.connection.execute("SELECT state FROM entities WHERE id=?", (entity_id,)).fetchone()
@@ -243,10 +113,12 @@ class StateStore:
         with self.connection:
             self._transition(entity_id, current["state"], new, reason, evidence)
 
+
     def eligible(self, limit: int) -> list[sqlite3.Row]:
         return self.connection.execute(
             "SELECT * FROM entities WHERE state IN ('discovered','retry_eligible') ORDER BY id LIMIT ?", (limit,)
         ).fetchall()
+
 
     def lease(self, entity_id: str, run_id: str, owner: str, seconds: int) -> None:
         expires = _stamp(_now() + timedelta(seconds=seconds))
@@ -257,6 +129,7 @@ class StateStore:
             self.connection.execute("UPDATE entities SET run_id=?,lease_owner=?,lease_expires=? WHERE id=?", (run_id, owner, expires, entity_id))
             self._transition(entity_id, current["state"], "leased", "runner_lease")
 
+
     def recover_expired_leases(self) -> int:
         now = _stamp()
         rows = self.connection.execute("SELECT id FROM entities WHERE state='leased' AND lease_expires IS NOT NULL AND lease_expires<=?", (now,)).fetchall()
@@ -265,6 +138,7 @@ class StateStore:
                 self.connection.execute("UPDATE entities SET lease_owner=NULL,lease_expires=NULL WHERE id=?", (row["id"],))
                 self._transition(row["id"], "leased", "retry_eligible", "lease_expired")
         return len(rows)
+
 
     def begin_attempt(
         self,
@@ -316,6 +190,7 @@ class StateStore:
                 ),
             )
 
+
     def finish_attempt(
         self,
         attempt_id: str,
@@ -362,12 +237,14 @@ class StateStore:
                 ),
             )
 
+
     def record_validation(self, run_id: str, entity_id: str, attempt_id: str, passed: bool, evidence: dict[str, Any], path: str) -> None:
         with self.connection:
             self.connection.execute(
                 "INSERT INTO validator_results(run_id,entity_id,attempt_id,passed,evidence_json,evidence_path,created_at) VALUES(?,?,?,?,?,?,?)",
                 (run_id, entity_id, attempt_id, int(passed), json.dumps(evidence, sort_keys=True), path, _stamp()),
             )
+
 
     def attempt_evidence(self, attempt_id: str) -> dict[str, Any]:
         attempt = self.connection.execute("SELECT * FROM attempts WHERE id=?", (attempt_id,)).fetchone()
@@ -379,6 +256,7 @@ class StateStore:
             "validation_evidence_path": validation["evidence_path"] if validation else None,
         }
 
+
     def prepare_promotion(self, promotion_id: str, entity_id: str, original_hash: str, candidate_hash: str, backup_path: str) -> None:
         with self.connection:
             self.connection.execute(
@@ -386,13 +264,16 @@ class StateStore:
                 (promotion_id, entity_id, original_hash, candidate_hash, backup_path, _stamp()),
             )
 
+
     def finish_promotion(self, promotion_id: str, status: str) -> None:
         with self.connection:
             self.connection.execute("UPDATE promotion_records SET status=?,finished_at=? WHERE id=?", (status, _stamp(), promotion_id))
 
+
     def latest_promotion(self, entity_id: str) -> dict[str, Any] | None:
         row = self.connection.execute("SELECT * FROM promotion_records WHERE entity_id=? ORDER BY created_at DESC LIMIT 1", (entity_id,)).fetchone()
         return dict(row) if row else None
+
 
     def set_outcome(
         self,
@@ -418,8 +299,10 @@ class StateStore:
             )
             self._transition(entity_id, current["state"], state, error[0] if error else "stage_complete", evidence or accepted or candidate or thread)
 
+
     def summary(self) -> dict[str, int]:
         return {row["state"]: row["count"] for row in self.connection.execute("SELECT state,COUNT(*) count FROM entities GROUP BY state")}
+
 
     def entity(self, entity_id: str) -> dict[str, Any] | None:
         row = self.connection.execute("SELECT * FROM entities WHERE id=?", (entity_id,)).fetchone()
@@ -433,6 +316,7 @@ class StateStore:
             "promotions": [dict(item) for item in self.connection.execute("SELECT * FROM promotion_records WHERE entity_id=? ORDER BY created_at", (entity_id,))],
         }
 
+
     def run_evidence(self, run_id: str) -> dict[str, Any]:
         run = self.connection.execute("SELECT * FROM runs WHERE id=?", (run_id,)).fetchone()
         if not run:
@@ -443,6 +327,7 @@ class StateStore:
             "attempts": [dict(item) for item in self.connection.execute("SELECT * FROM attempts WHERE run_id=? ORDER BY started_at,id", (run_id,))],
             "validations": [dict(item) for item in self.connection.execute("SELECT * FROM validator_results WHERE run_id=? ORDER BY id", (run_id,))],
         }
+
 
     def failure_cohorts(self) -> list[dict[str, Any]]:
         rows = self.connection.execute("SELECT * FROM entities WHERE state='quarantined' ORDER BY id").fetchall()
@@ -467,6 +352,7 @@ class StateStore:
             cohort["count"] += 1
             cohort["entity_ids"].append(row["id"])
         return list(grouped.values())
+
 
     def run_metrics(self, run_id: str | None = None) -> dict[str, Any]:
         run = self.connection.execute(
@@ -513,6 +399,7 @@ class StateStore:
             "model_usage": "unknown unless supplied in thread captures",
             "quality_measurement": "unknown",
         }
+
 
     def retry_entities(self, entity_ids: list[str]) -> int:
         changed = 0

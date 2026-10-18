@@ -1,3 +1,9 @@
+"""
+Regression tests for VSCodeEntrypointExampleTests.
+Exercises public behavior with isolated fixtures and unittest assertions.
+Uses temporary resources or mocks where needed; no production state is changed.
+"""
+
 import json
 from pathlib import Path
 import unittest
@@ -51,7 +57,7 @@ class VSCodeEntrypointExampleTests(unittest.TestCase):
         self.assertLess(powershell.index("scripts/bootstrap.py"), powershell.index("& REPLACE_PIPELINE_COMMAND"))
         self.assertLess(bash.index("command -v REPLACE_PYTHON_COMMAND"), bash.index("scripts/bootstrap.py"))
         self.assertLess(bash.index("scripts/bootstrap.py"), bash.index("exec REPLACE_PIPELINE_COMMAND"))
-        self.assertIn("if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }", powershell)
+        self.assertRegex(powershell, r"if \(\$LASTEXITCODE -ne 0\) \{\s+exit \$LASTEXITCODE\s+\}")
         self.assertIn("exit 130", powershell)
         self.assertIn("exit 130", bash)
 

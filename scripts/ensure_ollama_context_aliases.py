@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Ensure selected context aliases exist in a local Docker-hosted Ollama.
-
-This command is intended to be called by a host's versioned bootstrap. It never
-pulls a base model or replaces an existing alias with unexpected contents.
+"""
+Ensure selected context aliases exist in a local Docker-hosted Ollama.
+Inspects Docker Ollama model definitions and creates or checks host-named context aliases.
+Preserves all model/draft sources and inherited parameters; reports per-alias results.
 """
 
 from __future__ import annotations
@@ -155,9 +155,12 @@ def from_source(show: dict[str, Any]) -> tuple[tuple[str, str], ...]:
     modelfile = show.get("modelfile")
     if not isinstance(modelfile, str):
         raise AliasError("model source cannot be verified: Ollama show omitted modelfile")
-    sources = tuple((match.group(1).upper(), match.group(2))
-                    for line in modelfile.splitlines()
-                    if (match := SOURCE_RE.fullmatch(line)))
+    source_rows = []
+    for line in modelfile.splitlines():
+        match = SOURCE_RE.fullmatch(line)
+        if match:
+            source_rows.append((match.group(1).upper(), match.group(2)))
+    sources = tuple(source_rows)
     if not any(kind == "FROM" for kind, _ in sources):
         raise AliasError("model source cannot be verified: missing FROM source")
     return sources
@@ -167,9 +170,12 @@ def inherited_parameters(show: dict[str, Any]) -> tuple[tuple[str, str], ...]:
     parameters = show.get("parameters")
     if not isinstance(parameters, str):
         raise AliasError("model has no inspectable parameters")
-    return tuple(sorted((parts[0].lower(), parts[1].strip())
-                        for line in parameters.splitlines()
-                        if len(parts := line.split(None, 1)) == 2 and parts[0].lower() != "num_ctx"))
+    inherited = []
+    for line in parameters.splitlines():
+        parts = line.split(None, 1)
+        if len(parts) == 2 and parts[0].lower() != "num_ctx":
+            inherited.append((parts[0].lower(), parts[1].strip()))
+    return tuple(sorted(inherited))
 
 
 def verify_alias(show: dict[str, Any], *, base_source: tuple[tuple[str, str], ...], context: int,
@@ -177,7 +183,11 @@ def verify_alias(show: dict[str, Any], *, base_source: tuple[tuple[str, str], ..
     parameters = show.get("parameters")
     if not isinstance(parameters, str):
         raise AliasError("alias has no inspectable parameters")
-    contexts = [int(match.group(1)) for line in parameters.splitlines() if (match := NUM_CTX_RE.fullmatch(line))]
+    contexts = []
+    for line in parameters.splitlines():
+        match = NUM_CTX_RE.fullmatch(line)
+        if match:
+            contexts.append(int(match.group(1)))
     if contexts != [context]:
         raise AliasError(f"alias context mismatch: expected {context}, found {contexts or 'none'}")
     if from_source(show) != base_source:
@@ -206,7 +216,9 @@ def ensure_aliases(container: str, model: str, contexts: list[str], *, check_onl
     if any(count > limit for count in requested.values()):
         raise AliasError(f"requested context exceeds base model limit of {limit} tokens")
 
-    passed = failed = created = 0
+    passed = 0
+    failed = 0
+    created = 0
     for alias, count in aliases:
         try:
             if canonical_name(alias) in names:

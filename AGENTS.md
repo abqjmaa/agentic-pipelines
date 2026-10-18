@@ -47,11 +47,13 @@ For combined tasks, follow dependency order: design before building prompts; con
 | Set up or review host VS Code pipeline entrypoints | `playbooks/how_to_set_up_pipeline_entrypoints_in_vscode.md` |
 | Authenticate or repair git/gh push and pull in an agent shell | `playbooks/how_to_use_git_and_gh_credentials_in_agent_shells.md` |
 | Change this framework | `playbooks/how_to_change_the_pipelines_framework.md` |
+| Organize source, decompose files, enforce commit/build gates | `playbooks/how_to_govern_source_and_builds.md` |
 
 If a listed playbook is absent, use the framework-change route rather than substituting unrelated legacy instructions.
 
 ## Universal invariants
 
+- Source and build governance is mandatory: follow `references/source_build_governance.md`. Keep all first-party source under top-level roots declared in `api.yaml` under `code`, mirrored in tracked `api.sample.yaml`. Each source file has at most 400 counted lines, one logical action per line, and a multiline responsibility header. Every source directory has a README inventory. Declare language-specific `comment_pattern` values; exclude only recognized comments from line accounting. Run the canonical `scripts/check_source_governance.py` before every commit and in every build pipeline. A failed check must block the commit/build; no advisory gate, ignored exit status, or ungoverned alternate build path. Install the staged pre-commit hook through host bootstrap, require committed-tree CI checks, and decompose violations rather than hide them.
 - Never use an LLM where deterministic logic is sufficient. LLM output is untrusted and may satisfy only the narrow contract declared for that stage.
 - Deterministic methods may establish only properties exactly computable from declared representations or traceable exact domain rules. Meaning, entailment, equivalence, relevance, faithful restatement, and qualitative fitness require bounded semantic or explicit human judgment. Heuristics may route or escalate uncertainty but may not impersonate semantic proof. Use `references/deterministic_and_semantic_authority.md` when designing or auditing gates.
 - Design model work around the smallest coherent semantic decision, not the smallest individually nameable claim. “Narrow” means bounded goal, inputs, outputs, authority, and failure behavior; do not fragment context or create semantic microstages merely to make a proxy easier to validate.

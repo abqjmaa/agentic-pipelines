@@ -7,3 +7,8 @@ These files are non-installable examples. Copy only after reviewing the host's r
 For a host with a Docker Compose service, a read-only probe can use a bounded `docker inspect` call and then check the application's actual readiness endpoint. It should return `(False, reason)` if Docker is unavailable, the named container is absent, the container is unhealthy, or the endpoint is unready. The corresponding repair, if approved, can call the host's pinned Compose command and then wait for the same probe to pass within a declared timeout. Register both functions as one `Requirement`; never put the Compose command in the probe.
 
 After adapting, run `python scripts/bootstrap.py --check` for a read-only report and `python scripts/bootstrap.py` to apply missing requirements. Run the latter twice to confirm the second run makes no changes. The VS Code wrappers call the stable command before the selected pipeline operation.
+
+## Source inventory
+
+- `bootstrap-v1.py`: Example requirement checks; replace the marker with reviewed host requirements.
+- `bootstrap.py`: Stable host bootstrap entrypoint; keep this path across user-selected versions.

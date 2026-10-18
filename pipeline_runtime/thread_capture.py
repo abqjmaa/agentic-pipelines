@@ -1,4 +1,8 @@
-"""Atomic, redacted evidence records for each local-inference call."""
+"""
+Atomic, redacted evidence records for each local-inference call.
+Persists redacted model request, response, failure and timing evidence as thread records.
+Creates capture directories and writes JSON evidence with stable caller-provided identity.
+"""
 
 from __future__ import annotations
 

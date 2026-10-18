@@ -1,4 +1,8 @@
-"""Deterministic source provenance and complete model-packet accounting."""
+"""
+Deterministic source provenance and complete model-packet accounting.
+Validates allowed source roles, selected and omitted sources and assembled request budgets.
+Builds packet manifests for bounded model calls without deciding source meaning.
+"""
 
 from __future__ import annotations
 

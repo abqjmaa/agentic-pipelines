@@ -37,3 +37,29 @@ generation:
 # Literal strings to redact from captured prompts, responses, errors, and logs.
 redaction:
   sensitive_values: []
+
+# Public source/build policy; copy this mapping unchanged into local api.yaml.
+# CI uses this tracked sample and never requires inference credentials.
+code:
+  max_lines: 400
+  roots:
+    - pipeline_runtime
+    - scripts
+    - source_governance
+    - tests
+    - templates
+  languages:
+    .py:
+      adapter: python
+      comment_pattern: '(?:#[^\n]*|(?s:""".*"""|\x27\x27\x27.*\x27\x27\x27))'
+    .sh:
+      adapter: shell
+      comment_pattern: '#[^\n]*'
+    .ps1:
+      adapter: powershell
+      comment_pattern: '(?:#[^\n]*|(?s:<#.*#>))'
+  build_pipelines:
+    - path: .github/workflows/markdown-pdf.yml
+      kind: github-actions
+    - path: .github/workflows/source-governance.yml
+      kind: github-actions

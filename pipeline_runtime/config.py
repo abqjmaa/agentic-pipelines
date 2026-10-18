@@ -1,4 +1,8 @@
-"""Validated, local-only configuration for the shared inference primitive."""
+"""
+Validated, local-only configuration for the shared inference primitive.
+Loads local YAML API settings and validates endpoint, request and generation budgets.
+Defines configuration errors and typed policies; rejects unapproved remote endpoints.
+"""
 
 from __future__ import annotations
 

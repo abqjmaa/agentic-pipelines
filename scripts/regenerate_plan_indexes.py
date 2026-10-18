@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Validate plan files and regenerate per-status plan indexes."""
+"""
+Validate plan files and regenerate per-status plan indexes.
+Reads task-plan front matter and regenerates future/current/past Markdown indexes.
+Supports an explicit repository root and preserves the canonical status ordering.
+"""
 
 from __future__ import annotations
 

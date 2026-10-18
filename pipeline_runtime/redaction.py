@@ -1,4 +1,8 @@
-"""Redact configured literal secrets before evidence leaves process memory."""
+"""
+Redact configured literal secrets before evidence leaves process memory.
+Recursively removes configured sensitive literal values from diagnostic structures.
+Returns redacted copies for evidence; performs no network or filesystem operations.
+"""
 
 from __future__ import annotations
 
@@ -26,4 +30,3 @@ def redact_value(value: Any, sensitive_values: tuple[str, ...]) -> Any:
     if isinstance(value, dict):
         return {str(key): redact_value(item, sensitive_values) for key, item in value.items()}
     return value
-

@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Example requirement checks; replace the marker with reviewed host requirements."""
+"""
+Example requirement checks; replace the marker with reviewed host requirements.
+Provides an adaptable host-owned bootstrap interface and explicit failure handling.
+Hosts select requirements and runtime setup; this example is not auto-installed.
+"""
 
 from __future__ import annotations
 
@@ -45,7 +49,8 @@ def run(checks: Sequence[Requirement], *, check_only: bool) -> int:
         print("FAIL requirement inventory: no host requirements declared")
         print("TOTAL pass=0 fail=1")
         return 1
-    passed = failed = 0
+    passed = 0
+    failed = 0
     for item in checks:
         try:
             healthy, detail = item.probe()

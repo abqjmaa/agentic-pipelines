@@ -27,6 +27,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
+      - run: python -m pip install PyYAML
+      - name: Source governance
+        run: python scripts/check_source_governance.py --repo-root .
       - run: python -m pip install -r requirements-markdown-pdf.txt
       - run: python -m unittest discover -s tests -p test_render_markdown_pdf.py -v
       - name: Exercise clean bootstrap and repeat render

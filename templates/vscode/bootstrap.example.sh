@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Bootstrap host prerequisites before invoking the declared pipeline command.
+# Replace command markers with host-owned choices; failures stop execution.
+# Uses the host Python bootstrap and inherits the operator environment.
 set -euo pipefail
 
 trap 'printf "%s\n" "bootstrap: interrupted" >&2; exit 130' INT

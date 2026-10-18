@@ -8,6 +8,16 @@ Agentic Pipelines are mostly ordinary deterministic automation. Code governs exa
 
 ## Pipeline entry points
 
+Source/build governance is mandatory for this framework and adopting hosts. Run
+`python scripts/check_source_governance.py --repo-root .` inside the framework
+(prefix `scripts/` with `agentic-pipelines/` in a host). Use `--staged` before
+commits. Install the preserved-hook integration with
+`python scripts/install_source_governance_hook.py --repo-root .`. Every build
+pipeline must run the check and fail when it fails; the reusable entrypoint is
+`python scripts/governed_build.py --repo-root . -- COMMAND ARG...`.
+See `references/source_build_governance.md` for source roots, comment-aware
+400-line accounting, headers, directory inventories and mandatory build wiring.
+
 All commands run from the host repository root, where the framework is normally mounted at `./agentic-pipelines`. Start with the command matching the smallest action you need:
 
 - `python agentic-pipelines/scripts/validate_pipeline_package.py path/to/staged-package`: validate a proposed pipeline package without inference or source mutation.

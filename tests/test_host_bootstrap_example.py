@@ -1,4 +1,8 @@
-"""Exercise the non-installable host bootstrap example in an isolated directory."""
+"""
+Exercise the non-installable host bootstrap example in an isolated directory.
+Exercises public behavior with isolated fixtures and unittest assertions.
+Uses temporary resources or mocks where needed; no production state is changed.
+"""
 
 from contextlib import redirect_stdout
 from importlib.util import module_from_spec, spec_from_file_location

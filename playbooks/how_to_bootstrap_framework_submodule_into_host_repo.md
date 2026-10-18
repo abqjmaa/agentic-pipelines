@@ -21,3 +21,10 @@ Adding this framework to a host for the first time.
 A non-running host scaffold plus synthesis/verification report. The host root contains a tracked `api.sample.yaml`; only `api.yaml` is ignored. Stop on unapproved overwrite, dirty conflict, credential exposure, unsafe runtime path, ambiguous host ownership, or an unresolved interactive entrypoint/main-action inventory.
 
 
+
+## Mandatory source and build governance
+
+Apply `references/source_build_governance.md` using
+`playbooks/how_to_govern_source_and_builds.md`: declare code roots/comment patterns,
+install/check preserved staged hooks through bootstrap, and include a blocking
+source check in every build pipeline. Pointer refresh alone is not host compliance.

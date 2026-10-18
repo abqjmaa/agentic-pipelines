@@ -1,3 +1,9 @@
+"""
+Regression tests for StateTests.
+Exercises public behavior with isolated fixtures and unittest assertions.
+Uses temporary resources or mocks where needed; no production state is changed.
+"""
+
 import tempfile
 import unittest
 from pathlib import Path

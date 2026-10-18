@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Stable host bootstrap entrypoint; keep this path across user-selected versions."""
+"""
+Stable host bootstrap entrypoint; keep this path across user-selected versions.
+Provides an adaptable host-owned bootstrap interface and explicit failure handling.
+Hosts select requirements and runtime setup; this example is not auto-installed.
+"""
 
 from __future__ import annotations
 

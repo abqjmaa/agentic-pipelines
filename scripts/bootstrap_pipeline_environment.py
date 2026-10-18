@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Install declared pipeline dependencies into an ignored host-local directory."""
+"""
+Install declared pipeline dependencies into an ignored host-local directory.
+Installs only declared Python requirements and optional Playwright browsers in ignored host-local paths.
+Supports dependency checks and re-execution without modifying system Python.
+"""
 
 from __future__ import annotations
 

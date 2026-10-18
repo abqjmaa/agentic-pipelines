@@ -1,4 +1,8 @@
-"""Deterministic, goal-specific candidate validation with stable evidence codes."""
+"""
+Deterministic, goal-specific candidate validation with stable evidence codes.
+Runs exact candidate checks for protected text, required content and allowed change bounds.
+Returns typed validation evidence; does not infer semantic equivalence or promote files.
+"""
 
 from __future__ import annotations
 

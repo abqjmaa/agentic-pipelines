@@ -20,3 +20,10 @@ Old upstream revision, new upstream revision, host-owned/customized artifacts, m
 
 ## Outputs and stop conditions
 An approved synthesis report, verified host state, and rollback path. Stop on unresolved ownership, credential exposure, incompatible schema without migration, or unapproved host behavior change.
+
+## Mandatory source and build governance
+
+Apply `references/source_build_governance.md` using
+`playbooks/how_to_govern_source_and_builds.md`: declare code roots/comment patterns,
+install/check preserved staged hooks through bootstrap, and include a blocking
+source check in every build pipeline. Pointer refresh alone is not host compliance.

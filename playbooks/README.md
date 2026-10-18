@@ -15,3 +15,5 @@ Only routed playbooks are active product instructions. Unrouted procedures shoul
 `how_to_use_git_and_gh_credentials_in_agent_shells.md` owns authenticating and repairing `git`/`gh` push and pull from a non-interactive agent shell, including the credential inventory, the `gh auth login --web` device flow, `gh auth setup-git`, verification, and the never-commit-secrets guardrail.
 
 `how_to_optimize_vscode_and_cerebras.md` optimizes a user-created, secret-backed Custom Endpoint with explicit low/medium/high reasoning presets and a 128144-token total context cap.
+
+- `how_to_govern_source_and_builds.md`: enforce source modularity, directory/file documentation, staged commits and mandatory failing build gates.

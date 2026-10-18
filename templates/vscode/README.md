@@ -7,3 +7,8 @@ These files illustrate the required host-owned shape; they are not installable f
 - `bootstrap.example.ps1` and `bootstrap.example.sh` demonstrate locating the host's Python interpreter, invoking its stable `scripts/bootstrap.py` once, and delegating only after success. Their relative paths assume these wrappers are adapted into host `.vscode/`; adjust them for the host layout. They intentionally do not install software themselves.
 
 Schema basis checked 2026-08-04: [VS Code tasks schema](https://code.visualstudio.com/docs/reference/tasks-appendix), [platform-specific launch properties](https://code.visualstudio.com/docs/debugtest/debugging-configuration#_platformspecific-properties), and the official [`node-terminal` command option](https://github.com/microsoft/vscode-js-debug/blob/main/OPTIONS.md#node-terminal-launch).
+
+## Source inventory
+
+- `bootstrap.example.ps1`: Bootstrap host prerequisites and forward the declared pipeline command and failures.
+- `bootstrap.example.sh`: Bootstrap host prerequisites and forward the declared pipeline command and failures.

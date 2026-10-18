@@ -1,4 +1,8 @@
-"""Deterministic checks for Docker Ollama alias provisioning without Ollama."""
+"""
+Deterministic checks for Docker Ollama alias provisioning without Ollama.
+Exercises public behavior with isolated fixtures and unittest assertions.
+Uses temporary resources or mocks where needed; no production state is changed.
+"""
 
 from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO

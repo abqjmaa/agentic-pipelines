@@ -19,3 +19,10 @@ Creating, reviewing, checking, or repairing an importing project's setup entrypo
 ## Outputs and stop conditions
 
 Produce the host-owned entrypoint, current versioned implementation, requirement inventory, and check/apply evidence. Stop on absent host plan authority, uncertain repair scope, host-data overwrite, unapproved privilege or machine-wide changes, or a check mode that mutates state.
+
+## Mandatory source and build governance
+
+Apply `references/source_build_governance.md` using
+`playbooks/how_to_govern_source_and_builds.md`: declare code roots/comment patterns,
+install/check preserved staged hooks through bootstrap, and include a blocking
+source check in every build pipeline. Pointer refresh alone is not host compliance.

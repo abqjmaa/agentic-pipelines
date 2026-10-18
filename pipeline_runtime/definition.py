@@ -1,4 +1,8 @@
-"""Strict schema-v2 loading for a host-owned pipeline definition."""
+"""
+Strict schema-v2 loading for a host-owned pipeline definition.
+Loads pipeline paths, stages, scheduling, promotion and recovery settings from YAML.
+Validates stage authority and resolves repository-relative resources for the runner.
+"""
 
 from __future__ import annotations
 

@@ -1,3 +1,9 @@
+"""
+Regression tests for GovernanceEvidenceTests.
+Exercises public behavior with isolated fixtures and unittest assertions.
+Uses temporary resources or mocks where needed; no production state is changed.
+"""
+
 from __future__ import annotations
 
 import hashlib
@@ -11,7 +17,7 @@ from unittest.mock import patch
 
 import yaml
 
-from pipeline_runtime import evidence as evidence_module
+from pipeline_runtime import rejection_evidence as evidence_module
 from pipeline_runtime.evidence import (
     execution_status,
     is_non_progress,

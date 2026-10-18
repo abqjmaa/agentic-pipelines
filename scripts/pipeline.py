@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Operate a bounded local Pipelines runtime from a host repository."""
+"""
+Operate a bounded local Pipelines runtime from a host repository.
+Dispatches preflight, discovery, execution, inspection, reporting and recovery commands.
+Builds the declared runner and optional local inference client; propagates typed failures.
+"""
 
 from __future__ import annotations
 

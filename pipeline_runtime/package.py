@@ -1,4 +1,8 @@
-"""Validation for reviewable, non-running pipeline packages."""
+"""
+Validation for reviewable, non-running pipeline packages.
+Validates staged pipeline packages against versioned schemas and semantic-design contracts.
+Reads declared artifacts and returns diagnostics without inference or promotion.
+"""
 
 from __future__ import annotations
 
