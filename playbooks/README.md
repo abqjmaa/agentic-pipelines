@@ -13,3 +13,5 @@ Only routed playbooks are active product instructions. Unrouted procedures shoul
 `how_to_optimize_vscode_and_ollama.md` mandates q8_0 KV cache and 45-minute inference timeouts for VS Code/Ollama, with warm-prefix reuse verification.
 
 `how_to_use_git_and_gh_credentials_in_agent_shells.md` owns authenticating and repairing `git`/`gh` push and pull from a non-interactive agent shell, including the credential inventory, the `gh auth login --web` device flow, `gh auth setup-git`, verification, and the never-commit-secrets guardrail.
+
+`how_to_optimize_vscode_and_cerebras.md` optimizes a user-created, secret-backed Custom Endpoint with explicit low/medium/high reasoning presets and a 128144-token total context cap.
