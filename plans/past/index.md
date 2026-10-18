@@ -2,6 +2,7 @@
 
 Format: `last_modified | path | title | summary`
 
+2026-10-18-00-00-03 | plans/past/2026-10-17-23-46-51_source-build-governance.md | Enforce source and build governance | Establish canonical modular source policy, deterministic checks, staged commit checks, and mandatory failing build gates.
 2026-10-13-13-03-00 | plans/past/2026-10-13-10-18-18_cerebras-reasoning-presets.md | Cerebras reasoning preset playbook | Optimize an existing secret-backed VS Code custom endpoint with named reasoning presets.
 2026-10-13-13-03-00 | plans/past/2026-10-09-22-40-00_conditional-flash-attention.md | Make Flash Attention conditional on compatibility | Clarify that unsupported Flash Attention alone does not block host optimization or establish unsupported Q8 caching.
 2026-10-09-10-36-56 | plans/past/2026-10-07-12-45-00_q8-mtp-cache.md | Require Q8 for target and MTP caches | User-approved clarification and live host validation of target and draft KV cache requirements.
