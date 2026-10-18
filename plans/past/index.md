@@ -2,6 +2,7 @@
 
 Format: `last_modified | path | title | summary`
 
+2026-10-18-00-11-15 | plans/past/2026-10-18-00-10-00_host-owned-build-governance.md | Correct governance to host-owned VS Code pipelines | Remove unauthorized GitHub Actions integration and apply software-build gates through host-owned VS Code entrypoints.
 2026-10-18-00-09-47 | plans/past/2026-10-17-23-46-51_source-build-governance.md | Enforce source and build governance | Establish canonical modular source policy, deterministic checks, staged commit checks, and mandatory failing build gates.
 2026-10-13-13-03-00 | plans/past/2026-10-13-10-18-18_cerebras-reasoning-presets.md | Cerebras reasoning preset playbook | Optimize an existing secret-backed VS Code custom endpoint with named reasoning presets.
 2026-10-13-13-03-00 | plans/past/2026-10-09-22-40-00_conditional-flash-attention.md | Make Flash Attention conditional on compatibility | Clarify that unsupported Flash Attention alone does not block host optimization or establish unsupported Q8 caching.
