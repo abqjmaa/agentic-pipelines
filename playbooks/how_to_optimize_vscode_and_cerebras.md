@@ -2,7 +2,7 @@
 
 ## Use when
 
-Optimizing an existing Cerebras Custom Endpoint in VS Code Chat with named Qwen 3.8 27B reasoning presets.
+Configuring an existing Cerebras Custom Endpoint in VS Code Chat with the native Thinking Effort selector.
 
 ## Load
 
@@ -15,11 +15,11 @@ The user must already have added a Custom Endpoint through VS Code and supplied 
 ## Procedure
 
 1. Confirm the active JSON path using the reference's Windows/Linux locations and provider UI. Bind edits to the approved scope; preserve unrelated providers and make a local backup. Identify the intended Cerebras entry explicitly when multiple candidates exist.
-2. Follow the reference to create `cerebras-qwen3.8:27b-low`, `cerebras-qwen3.8:27b-medium`, and `cerebras-qwen3.8:27b-high`. Copy the existing secret reference verbatim into each provider. Keep the API model ID `qwen-3.8-27b`; aliases are display names.
-3. Set every preset's total context to 128144, reserving 16000 output tokens. Use the installed provider's supported request-shaping mechanism; never infer effort from a name or silently retain an unsupported field.
-4. Validate JSON, distinct names, matching secret references, explicit effort, budgets and preserved unrelated entries. Merge existing matching presets rather than duplicate them.
-5. Select medium for ordinary interactive work. Verify each preset with a sanitized bounded chat and inspect redacted outgoing model/effort metadata. Measure representative latency and answer fitness before claiming improvement; choose low/high according to observed task needs.
+2. Configure one Cerebras provider/model entry using API model ID `qwen-3.8-27b`. Preserve its existing secret reference. Model-level `thinking: true`, `supportsReasoningEffort: ["none", "low", "medium", "high"]`, and `reasoningEffortFormat: "chat-completions"` are mandatory. Use the native selector to change effort.
+3. Confirm the account/model context and completion limits. Preserve approved budgets; the reference's operator example uses 131072 total tokens and 40960 output tokens, leaving 90112 input tokens. These numbers require account/model verification.
+4. Validate JSON, selector fields, model identity, secret reference, budget arithmetic and preservation of unrelated entries. Update the existing entry rather than duplicate it. Remove conflicting fixed effort request options from the selected entry so the selector governs the request.
+5. Select the model and choose Thinking Effort in its picker submenu. Start with medium for ordinary interactive work. Verify none/low/medium/high with bounded sanitized requests and redacted outgoing model/effort metadata. Measure representative latency and answer fitness before claiming improvement.
 
 ## Output and stop conditions
 
-Record version, scope, presets, budgets, redacted verification and rollback location. Stop on missing secret storage, unsupported request shaping, account context limits below the requested cap, alias collisions or effort mismatches. Restore only affected entries from backup on failure. Configuration checks alone establish no live performance result.
+Record version, scope, selector values, budgets, redacted verification and rollback location. Stop on missing secret storage, unsupported selector/request shaping, account limits below the requested budgets or outgoing effort mismatches. Restore only affected entries from backup on failure. Configuration checks alone establish no live performance result.

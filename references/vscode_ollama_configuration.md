@@ -46,6 +46,24 @@ and stop for that reason; do not infer it solely from GPU architecture.
 
 Context aliases must preserve the complete selected model definition. For MTP models such as Qwen3.8, inspect every model/draft component exposed by the installed backend; do not require exactly one FROM entry or validate only the first weight source. Some versions expose multiple FROM entries, while others expose FROM plus DRAFT. Create the alias from the existing named model so its complete definition is inherited, override only the intended context parameter, and verify all source components and the existing MTP parameters remain intact. Do not reconstruct it from one blob or disable MTP to make verification pass.
 
+## Thinking effort and the native selector
+
+The official Ollama extension uses vendor `ollama-models`. Installed version 0.0.13 accepts a server URL and an optional array of model-name strings; it does not consume Custom Endpoint model objects or their `supportsReasoningEffort` / `reasoningEffortFormat` fields. Adding these fields to an Ollama provider entry does not enable the native dropdown.
+
+For this extension, merge `ollama.thinkingLevels` into the approved VS Code settings scope, keyed by the exact model name including its tag. For example, for a server exposing `gpt-oss:20b` with named effort support:
+
+```json
+{
+  "ollama.thinkingLevels": {
+    "gpt-oss:20b": "low"
+  }
+}
+```
+
+The extension validates the value against server `/api/show` thinking metadata or its known-model fallback and sends native `think`. Some models accept booleans, others named levels; unsupported values are ignored in favor of the server default. Context aliases require their exact names as keys. Diagnose the selected model's advertised values before configuring it. Settings changes apply to the next request. The official README explicitly leaves the native effort dropdown as future work because it depends on a proposed VS Code API restricted for Marketplace extensions. [Official extension documentation](https://github.com/ollama/ollama-vscode#thinking-effort), [extension schema](https://github.com/ollama/ollama-vscode/blob/main/package.json)
+
+A separate `customendpoint` configuration pointing at the server's `/v1/chat/completions` endpoint can use Microsoft's native selector fields. This is a feasible alternative, requiring verification of the installed Ollama version and selected model's accepted `reasoning_effort` values. It changes the provider path: the official extension's `ollama.thinkingLevels` and inference timeout setting do not govern that Custom Endpoint. Verify equivalent 45-minute inference waits, immediate cancellation, effective context budgets, tools and selected effort on the new path before adopting it. Advertise only supported values; booleans in native `think` are not automatically equivalent to named OpenAI-compatible effort levels. Preserve existing providers during a bounded trial; configuration alone is not live verification. [Ollama OpenAI compatibility](https://docs.ollama.com/api/openai-compatibility), [Microsoft selector contract](https://code.visualstudio.com/docs/agent-customization/language-models)
+
 ## Procedure
 
 1. Record model identity, effective context, reasoning setting, GPU offload, provider version and timeout settings. Size context for the full system/tool prompt, conversation and completion reserve. The operator reports roughly 20K tokens of repeated VS Code system prompt per request in the target workflow; measure the actual installed client's request rather than assuming all VS Code configurations have that size.

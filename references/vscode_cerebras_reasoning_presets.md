@@ -1,4 +1,4 @@
-# VS Code Cerebras reasoning presets
+# VS Code Cerebras reasoning selector
 
 Use with [the optimization playbook](../playbooks/how_to_optimize_vscode_and_cerebras.md).
 
@@ -23,93 +23,51 @@ For Remote SSH, WSL, containers or a browser-hosted editor, establish whether th
 
 ## Existing endpoint and credential boundary
 
-The operator first adds a Custom Endpoint and stores the key through VS Code's credential UI in the target profile/remote environment. The starter with blank model fields is a template to optimize after that step; it is not evidence that secret storage exists. Confirm an existing `${input:chat.lm.secret.…}` reference without resolving its value. Reuse that exact reference across the three provider entries below. `REUSE_EXISTING_REFERENCE` is deliberately a nonfunctional placeholder, never a secret ID to install.
+First add a Custom Endpoint and store the key through VS Code's credential UI in the target profile/remote environment. Confirm an existing secret input reference without resolving its value, and preserve it verbatim. `REUSE_EXISTING_REFERENCE` below is a nonfunctional placeholder. Preserve unrelated providers and keep backups local and out of Git.
 
-Provider and model display names use `cerebras-qwen3.8:27b-<effort>`, following the readable model/tag style of local aliases while identifying the cloud provider and reasoning choice. These are not Ollama models or hostname/context aliases. Each provider contains one model because all three requests must send the same server model ID; distinct provider names separate their configuration groups. Preserve unrelated entries in the surrounding array. If an existing alias has conflicting settings, resolve the conflict rather than append a second copy.
+## Required selector configuration
 
-## Current documented configuration
-
-VS Code documents model-level `modelOptions` for request parameters and `contextWindow` as the total input/output budget. The following entries use that contract. [VS Code model configuration](https://code.visualstudio.com/docs/agent-customization/language-models)
+Use one provider with one model and select reasoning through VS Code's native Thinking Effort submenu. The model-level fields `thinking`, `supportsReasoningEffort`, and `reasoningEffortFormat` shown below are mandatory for this recipe. Microsoft documents that the effort list enables the picker and `chat-completions` forwards its selection as a top-level `reasoning_effort` string. [VS Code model configuration](https://code.visualstudio.com/docs/agent-customization/language-models)
 
 ```json
 [
   {
-    "name": "cerebras-qwen3.8:27b-low",
+    "name": "Cerebras",
     "vendor": "customendpoint",
     "apiKey": "REUSE_EXISTING_REFERENCE",
     "apiType": "chat-completions",
     "models": [
       {
         "id": "qwen-3.8-27b",
-        "name": "cerebras-qwen3.8:27b-low",
+        "name": "Cerebras Qwen 3.8 27B",
         "url": "https://api.cerebras.ai/v1/chat/completions",
         "toolCalling": true,
         "vision": true,
         "thinking": true,
-        "contextWindow": 128144,
-        "maxInputTokens": 112144,
-        "maxOutputTokens": 16000,
-        "modelOptions": { "reasoning_effort": "low" }
-      }
-    ]
-  },
-  {
-    "name": "cerebras-qwen3.8:27b-medium",
-    "vendor": "customendpoint",
-    "apiKey": "REUSE_EXISTING_REFERENCE",
-    "apiType": "chat-completions",
-    "models": [
-      {
-        "id": "qwen-3.8-27b",
-        "name": "cerebras-qwen3.8:27b-medium",
-        "url": "https://api.cerebras.ai/v1/chat/completions",
-        "toolCalling": true,
-        "vision": true,
-        "thinking": true,
-        "contextWindow": 128144,
-        "maxInputTokens": 112144,
-        "maxOutputTokens": 16000,
-        "modelOptions": { "reasoning_effort": "medium" }
-      }
-    ]
-  },
-  {
-    "name": "cerebras-qwen3.8:27b-high",
-    "vendor": "customendpoint",
-    "apiKey": "REUSE_EXISTING_REFERENCE",
-    "apiType": "chat-completions",
-    "models": [
-      {
-        "id": "qwen-3.8-27b",
-        "name": "cerebras-qwen3.8:27b-high",
-        "url": "https://api.cerebras.ai/v1/chat/completions",
-        "toolCalling": true,
-        "vision": true,
-        "thinking": true,
-        "contextWindow": 128144,
-        "maxInputTokens": 112144,
-        "maxOutputTokens": 16000,
-        "modelOptions": { "reasoning_effort": "high" }
+        "contextWindow": 131072,
+        "maxOutputTokens": 40960,
+        "supportsReasoningEffort": ["none", "low", "medium", "high"],
+        "reasoningEffortFormat": "chat-completions"
       }
     ]
   }
 ]
 ```
 
-The capability flags preserve the operator's supplied model configuration; verify tools, image inputs and reasoning rendering against the actual account/model before advertising those capabilities. The requested 128144 is an operating cap, not a claim of the provider's published maximum. Confirm account/model support first. With the starter's 16000-token output reserve, input is 112144; never combine 128144 input tokens with an additional 16000 output tokens under this cap. If changing output reserve, recompute input to retain the same total.
+The capability flags and budgets reflect the operator's supplied configuration, not independently verified account entitlements. Verify tools, image inputs and reasoning support before advertising them. `contextWindow` is the combined input/output budget; VS Code derives 90112 input tokens from 131072 total minus 40960 output. If output changes, recompute the input allowance and verify provider/account limits. Preserve approved operating caps instead of silently enlarging them.
 
 ## Reasoning and version compatibility
 
-Cerebras documents `low`, `medium` and `high` for this API model, with `high` as the default and mapped to Qwen's native `xhigh` mode. Reasoning consumes the completion allowance, and effort does not guarantee a fixed token count. Explicit effort prevents an omitted value from selecting high. [Cerebras reasoning contract](https://inference-docs.cerebras.ai/capabilities/reasoning)
+Cerebras documents `none`, `low`, `medium`, and `high` for `qwen-3.8-27b`. `none` disables reasoning; `high` is the default and maps to Qwen's native `xhigh` mode. Reasoning tokens consume the completion allowance; effort does not guarantee a fixed token count. [Cerebras reasoning contract](https://inference-docs.cerebras.ai/capabilities/reasoning)
 
-Start with medium as the operator-requested interactive choice; use low for tasks that pass with less reasoning and high when measured answer fitness warrants it. Select the intended preset explicitly in new and existing conversations; listing medium does not set a global editor default.
+Select the model, open the arrow beside its name in the model picker, and choose Thinking Effort. Start with medium for ordinary interactive work; select other levels according to task needs and measured results. VS Code remembers effort per session and uses the last selected effort for that model in new conversations. Confirm the value in existing conversations too. [Microsoft picker behavior](https://code.visualstudio.com/docs/agent-customization/language-models#configure-thinking-effort)
 
-The supplied Thor-2 configuration uses provider-level `requestOptions.extraBody.reasoning_effort`. Its presence in JSON does not prove that the installed extension forwards it. Current Microsoft source passes model-level `modelOptions` to the endpoint. Inspect the installed schema/source and the redacted outgoing body; use the old field only if that version demonstrably supports it. Do not combine competing effort settings or allow a picker/session override to contradict a fixed alias. If aliases collapse in the picker or an override wins, stop and report the version incompatibility. [Microsoft Custom Endpoint implementation](https://github.com/microsoft/vscode/blob/main/extensions/copilot/src/extension/byok/vscode-node/customEndpointProvider.ts)
+Remove conflicting fixed `modelOptions.reasoning_effort` or legacy `requestOptions.extraBody.reasoning_effort` settings from the selected entry when adopting the selector. Do not infer forwarding from JSON presence alone. Verify the installed schema and redacted outgoing request. Stop if the selector is missing or its selected value is not forwarded; report the version incompatibility.
 
 ## Verification and rollback
 
-Before saving, parse JSON, confirm three unique provider/model display names, unchanged API model IDs and URLs, copied credential references, correct effort and budget sums, and preservation of every unrelated provider. Keep backups local and out of Git. A host bootstrap implementing this recipe must patch only the operator-selected entry and check the same invariants idempotently.
+Parse JSON and check a single intended provider/model, unchanged API model ID and URL, preserved credential reference, all required selector fields, valid budget arithmetic, and preservation of unrelated entries. A host bootstrap implementing this recipe must patch only the operator-selected entry and check these invariants idempotently.
 
-After saving, verify all three presets appear and send bounded sanitized chats in separate sessions. Inspect only redacted metadata proving `model=qwen-3.8-27b` and the selected `reasoning_effort`; do not retain keys, authorization headers or private prompts. Include a tool-use fixture when Agent mode is intended. Record failure, truncation and usage as available. Compare the same representative task across presets using elapsed time, time to first token where available, token usage and task acceptance. Bound retries and completion budgets; no automatic escalation to high or unsupported parameters.
+Verify all four choices appear and send bounded sanitized chats for each. Inspect only redacted metadata proving `model=qwen-3.8-27b` and the selected `reasoning_effort`; never retain keys, authorization headers or private prompts. Include a tool-use fixture when Agent mode is intended. Record failures, truncation and usage as available. Compare representative tasks using elapsed time, time to first token where available, token usage and task acceptance. Bound retries and completion budgets; do not escalate effort automatically.
 
-Configuration-only verification must be labeled separately from live request or performance evidence. On failure, restore the affected provider entries from the local backup, preserve unrelated intervening edits, and recheck the original endpoint. Do not delete the stored secret or change credentials as part of rollback.
+Label configuration checks separately from live request and performance evidence. On failure, restore the affected entry from the local backup, preserve unrelated intervening edits, and recheck the original endpoint. Do not delete stored secrets or change credentials during rollback.
