@@ -58,3 +58,10 @@ code:
     .ps1:
       adapter: powershell
       comment_pattern: '(?:#[^\n]*|(?s:<#.*#>))'
+
+# Optional exact host-root dispatchers (no wildcard/root exemption):
+# code.entrypoints:
+#   bootstrap.sh:
+#     purpose: Stable operator dispatcher
+#     delegate: scripts/bootstrap.sh
+# For HTML source, declare adapter: html and comment_pattern: '<!--[\s\S]*?-->'

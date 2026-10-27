@@ -13,7 +13,8 @@ Updating a submodule pointer does not by itself migrate a host's source or build
 
 Declare every source root in `api.yaml` under `code.roots`. Roots are repository-root
 directories such as `src`, `scripts`, `tests`, or `pipeline_runtime`, not `.` or
-individual files. All first-party source must be inside a declared root. Nested
+individual files. All first-party source must be inside a declared root, except
+exact host launchers declared under `code.entrypoints` as described below. Nested
 directories are allowed. Tests, examples, launchers, and generated first-party
 source are not blanket exceptions. Git submodules are separately governed repos;
 ignored dependency installations and build products are not first-party source.
@@ -120,3 +121,33 @@ hook setup and the host's actual software-build entrypoints. Verify with a local
 regression that invalid source prevents build execution through the shared path,
 and that valid source permits it while preserving the build's status. Record exact
 remaining host work; a pointer refresh alone does not establish compliance.
+
+## Exact host entrypoint contracts and HTML
+
+A stable root launcher may be declared by exact filename under
+`code.entrypoints`, for example:
+
+```yaml
+entrypoints:
+  bootstrap.sh:
+    purpose: Stable operator dispatcher
+    delegate: scripts/bootstrap.sh
+```
+
+Only individual root `.sh`, `.ps1` or `.py` files are supported; no globs,
+path escapes or blanket root exemptions. The delegate must exist under a
+declared source root with a configured language. The declaration records
+the interface; review must verify actual delegation, not infer it from a
+filename. The launcher still receives ordinary language, header, 400-line
+and layout checks and must be inventoried in root `README.md`. The target
+receives its normal checks. Undeclared root source remains an error. Local
+configuration parity and staged checking include the entire contract.
+
+Configure `.html` with `adapter: html` and `comment_pattern: '<!--[\s\S]*?-->'`.
+Only parser-recognized HTML comments matching that pattern are excluded;
+comment-like strings inside attributes/script/style count as source. A
+multiline responsibility comment may follow the HTML doctype. Embedded
+script/style bytes count conservatively and receive existing C-style layout
+checks. Inline handlers, executable URLs and inline style attributes must
+move to governed source; malformed comments/unclosed embedded content fail.
+This is source governance, not an HTML validator or browser security audit.

@@ -19,6 +19,8 @@ and fail when it fails; the reusable helper is
 `python scripts/governed_build.py --repo-root . -- COMMAND ARG...`.
 See `references/source_build_governance.md` for source roots, comment-aware
 400-line accounting, headers, directory inventories and host software-build wiring.
+Exact root launcher contracts and the HTML comment adapter preserve these checks
+without blanket root-file or HTML exclusions.
 Use `templates/vscode/software-build.*` as adaptable task/launch/native-wrapper
 examples when needed. No GitHub Actions integration is provided or required.
 

@@ -10,3 +10,5 @@ This directory owns source governance assets.
 - `python_source.py`: Validate Python statement layout and count physical code with tokenize and AST.
 - `snapshot.py`: Read repository or staged-index data without executing candidate source.
 - `text_source.py`: Lex comments and quoted literals for shell, PowerShell and C-style source.
+
+- `html_source.py`: Parse actual HTML comments while preserving embedded source accounting and layout enforcement.

@@ -9,7 +9,7 @@ import re
 import yaml
 
 
-ADAPTERS = {"python", "shell", "powershell", "cstyle"}
+ADAPTERS = {"python", "shell", "powershell", "cstyle", "html"}
 SOURCE_SUFFIXES = {
     ".py", ".pyw", ".sh", ".bash", ".ps1", ".psm1", ".go", ".rs",
     ".js", ".jsx", ".ts", ".tsx", ".c", ".h", ".cc", ".cpp", ".hpp",
@@ -58,8 +58,34 @@ def load_configuration(snapshot):
             re.compile(pattern)
         except re.error:
             raise ValueError(f"invalid comment_pattern for {extension}") from None
+    validate_entrypoints(config, snapshot)
     if not snapshot.staged and (snapshot.root / "api.yaml").exists():
         local = mapping((snapshot.root / "api.yaml").read_text(encoding="utf-8-sig"))
         if local != config:
             raise ValueError("local api.yaml code mapping differs from tracked api.sample.yaml")
     return config
+
+
+def validate_entrypoints(config, snapshot):
+    entries = config.get("entrypoints", {})
+    if not isinstance(entries, dict):
+        raise ValueError("code.entrypoints must be an exact filename mapping")
+    for name, contract in entries.items():
+        if not isinstance(name, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*\.(?:sh|ps1|py)", name):
+            raise ValueError("entrypoints must name individual root shell, PowerShell or Python files")
+        if name not in snapshot.files:
+            raise ValueError(f"missing declared entrypoint: {name}")
+        if not isinstance(contract, dict) or set(contract) != {"purpose", "delegate"}:
+            raise ValueError(f"entrypoint {name} needs purpose and delegate only")
+        if not isinstance(contract["purpose"], str) or not contract["purpose"].strip():
+            raise ValueError(f"entrypoint {name} needs a nonempty purpose")
+        delegate = contract["delegate"]
+        if not isinstance(delegate, str):
+            raise ValueError(f"entrypoint {name} delegate must be a path")
+        path = PurePosixPath(delegate)
+        if path.is_absolute() or ".." in path.parts or "\\" in delegate:
+            raise ValueError(f"entrypoint {name} delegate must stay inside a declared root")
+        if len(path.parts) < 2 or path.parts[0] not in config["roots"] or delegate not in snapshot.files:
+            raise ValueError(f"entrypoint {name} delegate must exist in a declared root")
+        if path.suffix not in config.get("languages", {}):
+            raise ValueError(f"entrypoint {name} delegate needs a configured source language")

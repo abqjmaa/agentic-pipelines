@@ -7,7 +7,7 @@ Report compressed actions conservatively; semantic simplicity remains review wor
 import re
 
 
-def inspect_text(text, adapter, pattern):
+def inspect_text(text, adapter, pattern, *, counted_rows=None):
     if adapter not in {"shell", "powershell", "cstyle"}:
         raise ValueError(f"unsupported source adapter: {adapter}")
     comment_start = {"shell": "#", "powershell": "#", "cstyle": "//"}[adapter]
@@ -83,6 +83,8 @@ def inspect_text(text, adapter, pattern):
     if len(header.splitlines()) < 2 or not any(c.isalpha() for c in header):
         issues.append("1: missing multiline responsibility header")
     issues.extend(inspect_layout("".join(visible), adapter))
+    if counted_rows is not None:
+        counted_rows.update(code)
     return len(code), issues
 
 

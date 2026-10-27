@@ -28,3 +28,5 @@ This directory owns tests assets.
 - `test_vscode_entrypoint_examples.py`: Regression tests for VSCodeEntrypointExampleTests.
 
 - `test_software_build_entrypoints.py`: Verify host software-build VS Code examples and their shared failing gate.
+
+- `test_source_host_contracts.py`: Verify exact root launchers and HTML comments against size, inventory, staged and build gates.

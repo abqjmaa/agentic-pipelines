@@ -10,6 +10,7 @@ import re
 from .configuration import SOURCE_SUFFIXES, load_configuration
 from .python_source import inspect_python
 from .text_source import inspect_text
+from .html_source import inspect_html
 
 
 def check(snapshot):
@@ -21,6 +22,9 @@ def check(snapshot):
     sources = {}
     roots = set(config["roots"])
     languages = config["languages"]
+    entrypoints = config.get("entrypoints", {})
+    if entrypoints:
+        directories.add(".")
     for name in sorted(snapshot.files):
         path = PurePosixPath(name)
         if path.parts[0] in roots:
@@ -36,7 +40,7 @@ def check(snapshot):
                 except UnicodeError:
                     pass
             continue
-        if path.parts[0] not in roots or len(path.parts) == 1:
+        if name not in entrypoints and (path.parts[0] not in roots or len(path.parts) == 1):
             issues.append(f"{name}: source is outside declared root directories")
             continue
         if extension not in languages:
@@ -48,6 +52,8 @@ def check(snapshot):
             language = languages[extension]
             if language["adapter"] == "python":
                 count, findings = inspect_python(text, language["comment_pattern"])
+            elif language["adapter"] == "html":
+                count, findings = inspect_html(text, language["comment_pattern"])
             else:
                 count, findings = inspect_text(text, language["adapter"], language["comment_pattern"])
             counts[name] = count
@@ -57,7 +63,8 @@ def check(snapshot):
         except (ValueError, SyntaxError, OSError) as error:
             issues.append(f"{name}: invalid source: {error}")
     for directory in sorted(directories):
-        readme = f"{directory}/README.md"
+        prefix = "" if directory == "." else directory + "/"
+        readme = prefix + "README.md"
         if readme not in snapshot.files:
             issues.append(f"{directory}: missing README.md source inventory")
             continue
@@ -67,6 +74,6 @@ def check(snapshot):
             if filename not in entries or not entries[filename].strip():
                 issues.append(f"{readme}: missing description for {filename}")
         for filename in entries:
-            if f"{directory}/{filename}" not in snapshot.files:
+            if prefix + filename not in snapshot.files:
                 issues.append(f"{readme}: stale inventory entry {filename}")
     return counts, issues
